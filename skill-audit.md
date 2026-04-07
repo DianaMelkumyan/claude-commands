@@ -5,12 +5,12 @@ description: Analyze skill usage logs and recommend which skills to keep, prune,
 
 ## Context
 
-- Usage log: !{cat ~/.claude/skill-usage.tsv 2>/dev/null | head -500}
-- Log line count: !{wc -l ~/.claude/skill-usage.tsv 2>/dev/null | head -1}
-- Installed local skills: !{ls ~/.claude/skills/ 2>/dev/null | head -30}
+- Usage log: !{cat /Users/diana/conductor/workspaces/dAIna/analytics/skill-usage.jsonl 2>/dev/null | tail -500}
+- Log line count: !{wc -l /Users/diana/conductor/workspaces/dAIna/analytics/skill-usage.jsonl 2>/dev/null | awk '{print $1}'}
+- Installed local skills: !{ls ~/.claude/commands/ 2>/dev/null | head -30}
 - Installed plugins: !{claude plugins list 2>&1 | grep -E "^  " | head -30}
-- Date range: !{head -2 ~/.claude/skill-usage.tsv 2>/dev/null | tail -1 | cut -f1}
-- Latest entry: !{tail -1 ~/.claude/skill-usage.tsv 2>/dev/null | cut -f1}
+- Date range: !{head -1 /Users/diana/conductor/workspaces/dAIna/analytics/skill-usage.jsonl 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('timestamp',''))" 2>/dev/null}
+- Latest entry: !{tail -1 /Users/diana/conductor/workspaces/dAIna/analytics/skill-usage.jsonl 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin).get('timestamp',''))" 2>/dev/null}
 
 ## Instructions
 

@@ -58,7 +58,9 @@ Fetch the launch note page from Notion. From the page properties, collect:
 - Linked Help Articles (from "Help Article (if any)" property) - fetch via Zendesk search
 - Any linked PRD or Tech spike pages
 
-Launch parallel fetches for all linked sources. Priority for cross-referencing: Product Guide > PRD > Tech spike > Zendesk.
+If any of the above links are missing (no linked Product Guide, no PRD, or no Help Article), extract the feature name from the launch note title and invoke `/feature-context {feature name}` to find the missing sources. Use whatever feature-context returns to fill in the gaps. If the launch note already has all sources linked, skip feature-context.
+
+Launch parallel fetches for all linked sources (both from page properties and from feature-context). Priority for cross-referencing: Product Guide > PRD > Tech spike > Zendesk.
 
 ## Step 2: Review the Draft
 Evaluate the draft against all sources. Review for 4 dimensions:

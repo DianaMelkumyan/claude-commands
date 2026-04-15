@@ -31,7 +31,9 @@ Fetch the launch note page from Notion (the $ARGUMENTS URL). From the page prope
 - Linked **Help Articles** (from the "Help Article (if any)" property) - fetch these via Zendesk search
 - Any linked **PRD** or **Tech spike** pages
 
-Launch agents in parallel to fetch all linked sources. Priority order for cross-referencing accuracy: Product Guide > PRD > Tech spike > Zendesk help articles.
+If any of the above links are missing (no linked Product Guide, no PRD, or no Help Article), extract the feature name from the launch note title and invoke `/feature-context {feature name}` to find the missing sources. Use whatever feature-context returns to fill in the gaps. If the launch note already has all sources linked, skip feature-context.
+
+Launch agents in parallel to fetch all linked sources (both from page properties and from feature-context). Priority order for cross-referencing accuracy: Product Guide > PRD > Tech spike > Zendesk help articles.
 
 ### Step 2: Review the Draft
 

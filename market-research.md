@@ -31,13 +31,12 @@ MODULES_SOURCE_URL                = "https://www.notion.so/8662d31182004bc5a3f2b
 
 ## Workflow overview
 
-3 phases plus an inline user checkpoint:
+3 phases, no manual checkpoint — the brief summary prints before research kicks off; user can Ctrl+C if it looks wrong:
 
 0. **MCP health check (~5s, cached)**: verify Notion connected; warn if not.
-1. **Scoping (~30s–2min)**: parse input, run /prd internal scoping agents (Branch B only), match category from bundled modules.json, extract dimensions, write research-brief.md.
-2. **[Checkpoint]**: user reviews/edits the brief, types `go`.
-3. **Research (~45–90s, parallel fan-out)**: launch 1 sub-agent per brand using `general-purpose` subagent type with explicit allowed_tools. Each writes findings-<brand>.md.
-4. **Synthesis + publish (~30s)**: one synthesis sub-agent merges findings into competitive-teardown.md, then orchestrator creates a page in the Market research database and (when applicable) links it from the input PRD's Additional Resources.
+1. **Scoping (~30s–2min)**: parse input, run /prd internal scoping agents (Branch B only), match category from bundled modules.json, extract dimensions, write research-brief.md. Print summary.
+2. **Research (~45–90s, parallel fan-out)**: launch 1 sub-agent per brand using `general-purpose` subagent type with explicit allowed_tools. Each writes findings-<brand>.md.
+3. **Synthesis + publish (~30s)**: one synthesis sub-agent merges findings into competitive-teardown.md, then orchestrator creates a page in the Market research database and (when applicable) links it from the input PRD's Additional Resources.
 
 Total wall-clock target: 2-4 minutes.
 
@@ -213,29 +212,22 @@ For Branch C, include the title-only warning banner at the top:
 
 ---
 
-# Checkpoint: User reviews the brief
+# Brief summary (no checkpoint — proceeds automatically)
 
-Print a tight summary to the user:
+After writing research-brief.md to disk, print a tight summary to the user and proceed immediately to Phase 2. No wait for input. The user can Ctrl+C if anything looks wrong before research kicks off (Phase 2 token-heavy work happens AFTER the summary prints).
 
 ```
-✏️  Research brief ready: <session-dir>/research-brief.md
+Research brief written: <session-dir>/research-brief.md
 
 Category: <matched-categories> (<confidence>)
 Visual relevance: <visual_relevance>
 Brands (<N>): <comma-separated list of final brands>
 Dimensions (<M>): <pipe-separated dimension names>
 
-Type 'go' to run research, 'edit' to open the brief in $EDITOR, or paste 
-corrections and I'll re-render the brief.
+Starting parallel research...
 ```
 
-Then WAIT for user input. Handle three response patterns:
-
-1. **`go` or empty input**: proceed to Phase 2.
-2. **`edit`**: open the brief in `$EDITOR` (fallback: nano). Re-render the summary after the editor closes. Wait again.
-3. **Inline corrections** (anything else): treat as PM feedback. Re-run dimension/brand assembly with the corrections applied (e.g., "drop Domino's, add Dutch Bros, change dimension 5 to 'reward stacking with promos'"). Re-render the brief on disk. Print the updated summary. Wait again.
-
-Brief.md edit cycles: unlimited. No artificial cap.
+To rerun with different brands or dimensions, re-invoke `/market-research` with `--brands "..."` overrides, or edit research-brief.md in the session dir and re-invoke on the same session (resume-mode behavior; not a v1 hard requirement but the session dir is preserved either way).
 
 ---
 

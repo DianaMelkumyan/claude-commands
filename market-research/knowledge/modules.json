@@ -1,0 +1,193 @@
+{
+  "source_url": "https://www.notion.so/8662d31182004bc5a3f2b547f9ba6dd7",
+  "last_refreshed": "2026-05-11",
+  "modules": [
+    {
+      "module": "Loyalty Engine",
+      "category": [
+        "Loyalty/CRM"
+      ],
+      "state": [
+        "Core"
+      ],
+      "features": "• All earned/promised reward types (intro reward, earned loyalty rewards, tiers & their benefits, birthday rewards)\n• The computation and qualification of purchase events",
+      "example_partners": "None"
+    },
+    {
+      "module": "CRM",
+      "category": [
+        "Loyalty/CRM"
+      ],
+      "state": [
+        "Core"
+      ],
+      "features": "• Canonical record of the consumer (identity, communication preferences)\n• Core repository of customer's historical relationship (purchase history, message history, reward history)\n• Brokers access to the customer's account in the CRM",
+      "example_partners": "None"
+    },
+    {
+      "module": "Offer/Reward Management (In-store Redemption)",
+      "category": [
+        "Loyalty/CRM"
+      ],
+      "state": [
+        "Core"
+      ],
+      "features": "• Business logic to apply discounts properly (validation and computation)\n• Reward state management (delivered, used, etc)\n• Fraud management\n• Assignation and management of terms",
+      "example_partners": ""
+    },
+    {
+      "module": "App / Web UX",
+      "category": [
+        "Ordering"
+      ],
+      "state": [
+        "Strategic"
+      ],
+      "features": "• Consumer experiences for account access, reward usage, Loyalty benefits\n• Platform for messaging and brand expression\n• Installation / destination for real time messaging",
+      "example_partners": ""
+    },
+    {
+      "module": "Order Management",
+      "category": [
+        "Ordering"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• Interface for browsing menus, building carts, and placing orders\n• Payment storage & processing\n• Application of rewards and benefits",
+      "example_partners": ""
+    },
+    {
+      "module": "Segmentation / Automation",
+      "category": [
+        "Marketing Automation"
+      ],
+      "state": [
+        "Strategic"
+      ],
+      "features": "• Rules engine for grouping of customers into segments\n• Logic to automatically capture segment transitions and trigger messaging\n• Reporting of customers in a segment and automation impact",
+      "example_partners": ""
+    },
+    {
+      "module": "Email",
+      "category": [
+        "Marketing Automation"
+      ],
+      "state": [
+        "Strategic"
+      ],
+      "features": "• Issuance of email messages for campaigns\n• Reporting of email engagement\n• Customization of messages\n• Preference management in CRM\n• Compliance management",
+      "example_partners": ""
+    },
+    {
+      "module": "Push Messaging",
+      "category": [
+        "Marketing Automation"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• Issuance of Push messages for campaigns\n• Reporting of Push engagement\n• Customization of messages\n• Preference management in CRM",
+      "example_partners": ""
+    },
+    {
+      "module": "SMS",
+      "category": [
+        "Marketing Automation"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• Issuance of SMS messages for campaigns\n• Reporting of SMS engagement\n• Customization of messages\n• Preference management in CRM\n• Compliance management",
+      "example_partners": ""
+    },
+    {
+      "module": "Digital Advertising",
+      "category": [
+        "Marketing Automation"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• Audience/segment creation for targeting (using loyalty data or 3rd party)\n• Issuance of advertising messaging\n• Reporting of advertising engagement and impact\n• Compliance management",
+      "example_partners": ""
+    },
+    {
+      "module": "Social Media",
+      "category": [
+        "Marketing Automation"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "",
+      "example_partners": "Scrollmark"
+    },
+    {
+      "module": "CDP",
+      "category": [
+        "Data"
+      ],
+      "state": [
+        "Basic"
+      ],
+      "features": "• Importing and mapping of data from 3rd party platforms\n• Audience creation/management\n• Exporting of data to 3rd party platforms (bi-directional data hub)",
+      "example_partners": ""
+    },
+    {
+      "module": "Business Intelligence",
+      "category": [
+        "Data"
+      ],
+      "state": [
+        "Basic"
+      ],
+      "features": "• Ability to analyze numerous data structures ad-hoc\n• Numerous visualizations\n• Ability to export data in custom outputs\n• Aggregation across data sources",
+      "example_partners": ""
+    },
+    {
+      "module": "Feedback",
+      "category": [
+        "Operations"
+      ],
+      "state": [
+        "Basic"
+      ],
+      "features": "• Consumers can submit feedback\n• Ability to respond to customer feedback\n• Ideally related to customer identity (CRM)",
+      "example_partners": ""
+    },
+    {
+      "module": "Reservations / Waitlist",
+      "category": [
+        "Operations"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• Consumers can reserve seating at a specific time (including ASAP)\n• Messaging about reservation status\n• Management of table inventory",
+      "example_partners": ""
+    },
+    {
+      "module": "Giftcards / Stored Value",
+      "category": [
+        "Operations"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• Processing of gift card purchases\n• Management of card balance\n• Management of capital paid in to balances",
+      "example_partners": ""
+    },
+    {
+      "module": "Wi-Fi",
+      "category": [
+        "Operations"
+      ],
+      "state": [
+        "Partner-enabled"
+      ],
+      "features": "• WiFi hardware / endpoints\n• Customization of landing screen\n• Data capture of customers signing into WiFi",
+      "example_partners": ""
+    }
+  ]
+}

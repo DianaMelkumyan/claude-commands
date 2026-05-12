@@ -22,7 +22,7 @@ If skill data exists (5+ entries):
 2. **Recency** - last used date for each skill
 3. **Trend** - active / declining / abandoned (used early but stopped)
 
-Present as a markdown table. Flag skills invoked fewer than 2 times as candidates for pruning.
+Present as a markdown table. Only flag skills as pruning candidates if they were invoked once AND last used more than 30 days ago. Single-use skills within the last 30 days are legitimate one-offs.
 
 If fewer than 5 entries, say "Not enough skill data yet (N entries). Check back after a week of use."
 

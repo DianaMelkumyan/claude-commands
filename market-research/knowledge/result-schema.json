@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://thanx.com/schemas/market-research/result.json",
+  "title": "/market-research result contract",
+  "description": "Machine-readable end-of-run output. Consumed by orchestrators (e.g. /accio) to decide whether to continue a chain and to build run-level summaries.",
+  "type": "object",
+  "required": [
+    "stage",
+    "status",
+    "signals",
+    "started_at",
+    "completed_at",
+    "artifacts",
+    "decisions",
+    "confidence",
+    "branch"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "stage": {
+      "type": "string",
+      "const": "market_research"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "warn", "error"],
+      "description": "ok = clean run; warn = partial brand coverage or known degradations; error = full batch failure or publish failure that left no usable output"
+    },
+    "signals": {
+      "type": "array",
+      "description": "Structured tags an orchestrator should surface to the PM (e.g., failed brands, branch downgrades, synthesis gaps). Use snake_case identifiers.",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*$"
+      }
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "artifacts": {
+      "type": "array",
+      "description": "Every file the run produced. kind is a hint for downstream tooling.",
+      "items": {
+        "type": "object",
+        "required": ["path", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Absolute or session-relative path"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["markdown", "json", "image", "screenshot", "other"]
+          }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "description": "Consequential internal choices. Audit trail for 'why did this land here?' Don't over-capture — only choices that would meaningfully change the output.",
+      "items": {
+        "type": "object",
+        "required": ["type", "chose", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$",
+            "description": "Categorical tag for the kind of decision (e.g., 'scope', 'branch', 'category_match', 'brand_list', 'synthesis_weighting')"
+          },
+          "chose": {
+            "type": "string",
+            "minLength": 1
+          },
+          "why": {
+            "type": "string",
+            "minLength": 1
+          },
+          "alternatives_considered": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Self-assessment of synthesis quality. Drops for many failed brands, Branch C, sparse data, implied category match, partial synthesis."
+    },
+    "notion_page_url": {
+      "description": "URL of the published Market research DB entry. null when Notion publish failed (status will reflect this).",
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
+    "branch": {
+      "type": "string",
+      "enum": ["A", "B", "C"]
+    }
+  }
+}

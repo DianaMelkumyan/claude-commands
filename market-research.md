@@ -28,8 +28,10 @@ MODULES_SOURCE_URL                = "https://www.notion.so/8662d31182004bc5a3f2b
 ## Usage
 
 ```
-/market-research <PRD url | feature request url | title string> [--brands "X, Y, Z"]
+/market-research <PRD url | feature request url | title string> [--brands "X, Y, Z"] [--output-dir <path>]
 ```
+
+When `--output-dir <path>` is set, the skill writes a structured `result.json` to that directory at the end of the run (in addition to all existing artifacts). The result.json is the machine-readable contract consumed by orchestrators like `/accio`. When unset, only the existing session-dir artifacts are produced.
 
 ## Workflow overview
 
@@ -84,6 +86,9 @@ Parse the command argument:
 - **If the argument is a Notion URL** (matches `https://www.notion.so/...` or `https://notion.so/...`): record `input.source = "notion-url"`, `input.value = <url>`, extract the page ID.
 - **If the argument is any other string**: record `input.source = "string"`, `input.value = <string>`.
 - **`--brands "X, Y, Z"`**: split on commas, trim whitespace, record as `user_seed_brands`.
+- **`--output-dir <path>`**: record as `result_output_dir`. Will be used in Phase 3 to write `result.json`. Expand `~` to `$HOME` and make absolute.
+
+**Capture `started_at` as an ISO 8601 UTC timestamp NOW** (e.g., `2026-05-11T14:30:00Z`). Initialize empty `decisions = []` and `signals = []` lists in memory — they accumulate throughout the run.
 
 Generate a `run_id` using a timestamp-based ID like `2026-05-11-1430` plus a short hash.
 
@@ -109,6 +114,17 @@ If `input.source == "string"`:
   **Branch C** (title-only). Skip the Notion fetch.
 
 Record `branch` in run-log payload.
+
+**Record a decision and signal for the branch choice:**
+```
+decisions.append({
+  "type": "branch",
+  "chose": "Branch A | B | C",
+  "why": "<short reason — e.g., 'rich PRD with populated Scope and Problem' | 'PRD exists but Scope is thin' | 'title-only input, no PRD URL'>"
+})
+```
+If Branch C: `signals.append("branch_c_title_only")`.
+If Branch B: `signals.append("branch_b_partial_prd")`.
 
 ## Branch B scoping pass
 
@@ -150,6 +166,18 @@ Read `market-research/knowledge/modules.json`. For each module in `modules[]`:
 - Compute a relevance score against the topic using keyword overlap.
 
 Pick the top 1-2 modules whose categories the topic touches. Record the matched categories in the brief. If no module scores above 0 → `category_match = "implied"` or `"no-match"` with explicit reasoning recorded.
+
+**Record category-match decision:**
+```
+decisions.append({
+  "type": "category_match",
+  "chose": "<matched-categories joined with ' + '>",
+  "why": "<short reason: 'direct keyword overlap on X, Y' | 'implied from <signal>' | 'no direct match — chose <fallback> based on <reason>'>",
+  "alternatives_considered": [<other categories that scored above 0 but weren't picked, if any>]
+})
+```
+If confidence is "implied": `signals.append("category_match_implied")`.
+If confidence is "no-match": `signals.append("category_match_none")`.
 
 ## Brand list assembly
 
@@ -193,6 +221,16 @@ for past run in matched category:
 For brands with ≥3 prior data points on the dimensions we're proposing now, add a "Strong on: <dim> (X/N)" or "Thin on: <dim> (X/N)" note to the brand's row. (Per spec Section 5 — Calibration 4.)
 
 Each entry in the brand list carries a **reference**: either `bundle_id` (consumer apps, used by per-brand agent for iTunes Search API tier 1) or `docs_url` (B2B brands, used as the per-brand agent's starting point for product-docs research). When both are null, the agent falls back to free-form web search at runtime.
+
+**Record brand-list-scoping decision (always):**
+```
+decisions.append({
+  "type": "brand_list",
+  "chose": "<N> brands: <comma-separated names>",
+  "why": "<short reason — e.g., 'modules-db seed (12) + user --brands (1) + learned-from-history (2), deduped, capped at 15'>"
+})
+```
+If final brand count < 3: `signals.append("sparse_brand_list")`.
 
 ## Dimension extraction
 
@@ -280,10 +318,10 @@ Wait for all sub-agents to complete. Read their returned JSON status and consoli
 
 For each brand:
 - **status: "failed"**: append to retry queue.
-- **status: "partial"**: include in synthesis but mark with `~` prefix in the brand list.
+- **status: "partial"**: include in synthesis but mark with `~` prefix in the brand list. `signals.append(f"brand_{slug(brand)}_partial")`.
 - **status: "full"**: include without modification.
 
-After the first batch returns, dispatch ONE retry batch for all failed brands. Second-failure brands are dropped from synthesis with a footnote in the final report.
+After the first batch returns, dispatch ONE retry batch for all failed brands. Second-failure brands are dropped from synthesis with a footnote in the final report. For each dropped brand: `signals.append(f"brand_{slug(brand)}_unreachable")`.
 
 If the entire first batch fails (likely a network outage or rate limit):
 - Print a clear error to the user.
@@ -393,7 +431,80 @@ Entry schema (single JSONL line):
 
 Mirror to `~/.claude/market-research/run-log.jsonl` (create parent dir if needed).
 
-## 3e. Final report
+## 3e. (Optional) Write result.json for orchestrator consumption
+
+This step runs ONLY when `result_output_dir` was provided via `--output-dir`. Skip entirely otherwise.
+
+**Capture `completed_at` as an ISO 8601 UTC timestamp NOW.**
+
+**Determine overall status:**
+- `status = "ok"` if synthesis succeeded and ≥80% of brands returned `full`.
+- `status = "warn"` if any of: synthesis_partial signal set, any brand_unreachable signal, any brand_partial signal, sparse_brand_list signal, category_match_implied or category_match_none signal, or notion publish degraded but markdown produced.
+- `status = "error"` if synthesis failed entirely OR notion publish failed AND no usable markdown exists.
+
+**Compute `confidence` (float 0-1):**
+Start at 1.0. Subtract:
+- Branch C: -0.25
+- Branch B: -0.10
+- Category match "implied": -0.10
+- Category match "no-match": -0.20
+- Each failed brand: -0.05 (cap total brand-failure deduction at -0.30)
+- Each partial brand: -0.02 (cap total at -0.10)
+- `synthesis_partial` signal: -0.15
+- `sparse_brand_list` signal: -0.10
+
+Clamp to [0, 1]. Round to 2 decimal places.
+
+**Add synthesis-weighting decision if synthesis grouped brands into patterns:**
+```
+decisions.append({
+  "type": "synthesis_weighting",
+  "chose": "<N> distinct patterns + <M> one-off observations + <K> anti-patterns",
+  "why": "<one-line rationale — e.g., 'majority pattern (Pattern A: wallet-claim) appeared in 7/12 brands; anti-pattern surfaced in 3 brands'>"
+})
+```
+If synthesis returned partial output (could not fully cluster), `signals.append("synthesis_partial")`.
+
+**Build the result.json payload:**
+
+```json
+{
+  "stage": "market_research",
+  "status": "<computed status>",
+  "signals": <the accumulated signals list, deduplicated>,
+  "started_at": "<captured at Phase 0>",
+  "completed_at": "<captured above>",
+  "artifacts": [
+    {"path": "<session-dir>/market-landscape.md", "kind": "markdown"},
+    {"path": "<session-dir>/research-brief.md", "kind": "markdown"},
+    {"path": "<session-dir>/run-log.jsonl", "kind": "json"}
+    // Add findings-<brand>.md files (kind: "markdown")
+    // Add scoping-features.md / scoping-slack.md if Branch B (kind: "markdown")
+    // Add screenshots/* if any (kind: "screenshot")
+  ],
+  "decisions": <the accumulated decisions list>,
+  "confidence": <computed confidence>,
+  "notion_page_url": "<the published page url, or null if publish failed>",
+  "branch": "<A | B | C>"
+}
+```
+
+**Validate before writing:**
+
+```bash
+# Write to a temp file first
+TMP_RESULT=$(mktemp)
+echo '<the json payload>' > "$TMP_RESULT"
+
+# Validate
+python3 /Users/diana/conductor/workspaces/dAIna/claude-commands/market-research/scripts/validate-result.py "$TMP_RESULT"
+```
+
+If the validator exits non-zero: **FAIL LOUD**. Print the validator's stderr output to the user, do NOT write the file to `result_output_dir`, and exit with an error. This protects orchestrators downstream from receiving malformed contracts.
+
+If valid: move the temp file to `<result_output_dir>/result.json`. Create parent directory if needed.
+
+## 3f. Final report
 
 Print to the user:
 
@@ -409,6 +520,8 @@ Outputs:
   Markdown:  <session-dir>/market-landscape.md
   Notion:    <page url>
              (in Market research database)
+<if --output-dir was set:>
+  Result:    <result_output_dir>/result.json (schema: market_research, status: <status>, confidence: <conf>)
 
 <if input was a PRD URL:>
 PRD link: <appended | failed to append - section anchor not found>

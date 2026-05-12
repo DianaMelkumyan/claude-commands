@@ -22,7 +22,7 @@ in parallel.
 
 ## Prompt body (everything below this line is what the sub-agent receives)
 
-You are researching ONE brand for a competitive teardown.
+You are researching ONE brand for a market-landscape teardown. The brand may be a competitor, a partner, or an aspirational exemplar — what matters is learning how they handle the behavior the topic describes.
 
 Brand: {{BRAND}}
 Brand type: {{BRAND_TYPE}}

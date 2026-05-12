@@ -26,10 +26,10 @@ Do NOT do any new web research. Pure assembly from existing files.
 
 ## Output
 
-Write {{SESSION_DIR}}/competitive-teardown.md following this structure:
+Write {{SESSION_DIR}}/market-landscape.md following this structure:
 
 ```markdown
-# Competitive landscape: {{TOPIC}}
+# Market landscape: {{TOPIC}}
 
 <one-paragraph scope statement summarizing the brief's topic interpretation and dimensions>
 

@@ -1,5 +1,5 @@
 {
-  "description": "Curated brand list per category for /market-research, with reference URLs for screenshot/research tier 1. For consumer brands, bundle_id is the iOS App Store identifier (used with https://itunes.apple.com/lookup?bundleId=...). For B2B brands, docs_url is the primary product documentation or product-tour starting point (used by the per-brand agent's tier 2 search).",
+  "description": "Curated list of reference brands per category for /market-research. Includes partners, competitors, and aspirational exemplars — relationship type isn't tracked here because the skill's job is to learn how leaders handle a given behavior, not to score who's an enemy. For consumer brands, bundle_id is the iOS App Store identifier (used with https://itunes.apple.com/lookup?bundleId=...). For B2B brands, docs_url is the primary product documentation or product-tour starting point (used by the per-brand agent's tier 1 search).",
   "last_curated": "2026-05-11",
   "schema_notes": {
     "bundle_id": "When null, the per-brand agent should do an iTunes Search API lookup by brand name at runtime: https://itunes.apple.com/search?term=<name>&entity=software&country=us&limit=1",
@@ -97,7 +97,7 @@
     "Operations - Feedback": {
       "consumer_brands": [],
       "b2b_brands": [
-        {"name": "Ovation", "docs_url": "https://www.ovationup.com/", "note": "Thanx PARTNER (not a competitor) — still useful as a UX reference for how feedback inboxes / response flows look to operators"},
+        {"name": "Ovation", "docs_url": "https://www.ovationup.com/", "note": "Thanx integration partner; useful as a UX reference for how feedback inboxes / response flows look to operators"},
         {"name": "Medallia", "docs_url": "https://www.medallia.com/platform/"},
         {"name": "Yelp for Business", "docs_url": "https://biz.yelp.com/support/"},
         {"name": "Momos", "docs_url": "https://momos.com/"}

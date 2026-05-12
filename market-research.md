@@ -1,8 +1,9 @@
 # /market-research
 
-Standalone competitive-teardown skill. Takes a PRD URL, feature request URL, or
-plain topic string, runs a parallel multi-brand external research pass, and
-publishes results as a page in the [Market research database](https://www.notion.so/35da84ed40248070aedee942503090ca)
+Standalone market-research skill. Takes a PRD URL, feature request URL, or
+plain topic string, runs a parallel multi-brand external research pass to learn
+how leaders in the space (partners, competitors, and exemplars alike) handle the
+behavior, and publishes results as a page in the [Market research database](https://www.notion.so/35da84ed40248070aedee942503090ca)
 plus a durable local markdown file. When invoked on a PRD URL, the PRD's
 `# Additional Resources` section gets a link to the new database entry — the
 research becomes a relevant reference without being embedded as a subpage of
@@ -37,7 +38,7 @@ MODULES_SOURCE_URL                = "https://www.notion.so/8662d31182004bc5a3f2b
 0. **MCP health check (~5s, cached)**: verify Notion connected; warn if not.
 1. **Scoping (~30s–2min)**: parse input, run /prd internal scoping agents (Branch B only), match category from bundled modules.json, extract dimensions, write research-brief.md. Print summary.
 2. **Research (~45–90s, parallel fan-out)**: launch 1 sub-agent per brand using `general-purpose` subagent type with explicit allowed_tools. Each writes findings-<brand>.md.
-3. **Synthesis + publish (~30s)**: one synthesis sub-agent merges findings into competitive-teardown.md, then orchestrator creates a page in the Market research database and (when applicable) links it from the input PRD's Additional Resources.
+3. **Synthesis + publish (~30s)**: one synthesis sub-agent merges findings into market-landscape.md, then orchestrator creates a page in the Market research database and (when applicable) links it from the input PRD's Additional Resources.
 
 Total wall-clock target: 2-4 minutes.
 
@@ -303,11 +304,11 @@ Read `market-research/agents/synthesis.md`. Substitute placeholders:
 
 Dispatch ONE general-purpose sub-agent with `allowed_tools: ["Write", "Read", "Glob"]`.
 
-When the sub-agent returns, verify `<session-dir>/competitive-teardown.md` exists and is non-empty.
+When the sub-agent returns, verify `<session-dir>/market-landscape.md` exists and is non-empty.
 
 ## 3b. Create the Notion page in the Market research database
 
-Read `<session-dir>/competitive-teardown.md`.
+Read `<session-dir>/market-landscape.md`.
 
 Transform pipe tables to Notion `<table>` XML (Notion's enhanced-markdown spec requires this for rendering).
 
@@ -330,7 +331,7 @@ Create the page:
 mcp__claude_ai_Notion__notion-create-pages
   parent: {type: "data_source_id", data_source_id: "35da84ed-4024-8023-9f06-000be3f49b54"}
   pages: [{
-    properties: {"Name": "Competitive landscape: <topic>"},
+    properties: {"Name": "Market landscape: <topic>"},
     icon: "🔭",
     content: <transformed markdown>
   }]
@@ -352,7 +353,7 @@ mcp__claude_ai_Notion__notion-update-page
   command: "update_content"
   content_updates: [{
     old_str: "<unique anchor in Additional Resources>",
-    new_str: "<unique anchor>\n- Competitive landscape: <mention-page url=\"<new page url>\">Competitive landscape: <topic></mention-page>"
+    new_str: "<unique anchor>\n- Market landscape: <mention-page url=\"<new page url>\">Market landscape: <topic></mention-page>"
   }]
 ```
 
@@ -405,7 +406,7 @@ Dimensions: <M>
 Patterns identified: <P> distinct + <A> anti-pattern(s)
 
 Outputs:
-  Markdown:  <session-dir>/competitive-teardown.md
+  Markdown:  <session-dir>/market-landscape.md
   Notion:    <page url>
              (in Market research database)
 

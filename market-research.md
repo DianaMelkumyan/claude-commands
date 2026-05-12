@@ -9,7 +9,8 @@ research becomes a relevant reference without being embedded as a subpage of
 the PRD itself.
 
 **Reference files** (loaded by this command at run time, paths relative to this file):
-- `market-research/knowledge/modules.json` — Technical Partner Strategy snapshot
+- `market-research/knowledge/modules.json` — Technical Partner Strategy snapshot (authoritative module/category map)
+- `market-research/knowledge/brand-references.json` — curated brand list per category with iOS bundle IDs (consumer) or product-docs URLs (B2B)
 - `market-research/knowledge/visual-relevance-keywords.md`
 - `market-research/knowledge/brief-template.md`
 - `market-research/agents/brand-research.md`
@@ -154,29 +155,43 @@ Pick the top 1-2 modules whose categories the topic touches. Record the matched 
 ```
 proposed_brands = []
 
-# 1. Modules DB seed (highest priority — partner names from snapshot)
+# 1. brand-references.json — curated per-category list (PRIMARY source)
+# The matched_categories may include sub-categories under Operations 
+# (e.g., "Operations - Feedback"). Match exact keys in brand-references.json.
+read knowledge/brand-references.json
+for category_key in matched_categories:
+    for brand in brand_references.categories[category_key].consumer_brands:
+        add(brand.name, provenance="brand-references", 
+            bundle_id=brand.bundle_id, brand_type="consumer-app", note=brand.note)
+    for brand in brand_references.categories[category_key].b2b_brands:
+        add(brand.name, provenance="brand-references", 
+            docs_url=brand.docs_url, brand_type="b2b", note=brand.note)
+
+# 2. Modules DB seed (SECONDARY — only when brand-references has nothing for the category,
+#    or to supplement partner names that aren't already covered)
 for category in matched_categories:
     for module in modules.json where category in module.category:
         for partner in split(module.example_partners, ","):
-            if partner not in ("", "None") and "‣" not in partner:
+            if partner not in ("", "None") and "‣" not in partner and partner not in proposed_brands:
                 add(partner, provenance="modules-db")
 
-# 2. User --brands seed
+# 3. User --brands seed
 for brand in user_seed_brands:
     add(brand, provenance="user-seed")
 
-# 3. Learned-from-history (skill-suggested)
+# 4. Learned-from-history (skill-suggested)
 read ~/.claude/market-research/run-log.jsonl
 for past run in matched category:
-    if past run had brands not in modules.json AND those brands had status="full" in >70% of their prior appearances (≥5 prior runs in category required):
+    if past run had brands not in brand-references.json AND those brands had status="full" 
+       in >70% of their prior appearances (≥5 prior runs in category required):
         add(brand, provenance="learned-from-history", note="strong signal in N prior runs")
 
-# Deduplicate, cap at 15
+# Deduplicate by name (case-insensitive), cap at 15
 ```
 
 For brands with ≥3 prior data points on the dimensions we're proposing now, add a "Strong on: <dim> (X/N)" or "Thin on: <dim> (X/N)" note to the brand's row. (Per spec Section 5 — Calibration 4.)
 
-Note: If the matched categories have empty/marker-only example_partners in modules.json (e.g., "‣" placeholders that represent unresolved relations), the brand list will rely more heavily on the user's `--brands` seed. Surface this in the brief if proposed brand count is <3.
+Each entry in the brand list carries a **reference**: either `bundle_id` (consumer apps, used by per-brand agent for iTunes Search API tier 1) or `docs_url` (B2B brands, used as the per-brand agent's starting point for product-docs research). When both are null, the agent falls back to free-form web search at runtime.
 
 ## Dimension extraction
 

@@ -5,7 +5,7 @@ the placeholders below before invoking a `general-purpose` sub-agent per brand
 in parallel.
 
 **subagent_type**: general-purpose
-**allowed_tools**: ["Write", "Read", "WebSearch", "WebFetch", "mcp__claude_ai_keystone__browser_navigate", "mcp__claude_ai_keystone__browser_screenshot", "mcp__claude_ai_keystone__browser_session_create", "mcp__claude_ai_keystone__browser_session_close"]
+**allowed_tools**: ["Write", "Read", "WebSearch", "WebFetch"]
 
 ## Placeholders to substitute
 
@@ -14,13 +14,19 @@ in parallel.
 - {{VISUAL_RELEVANCE}} — high | medium | low
 - {{SESSION_DIR}} — absolute path to .context/market-research/<run-id>/
 - {{DIMENSIONS}} — newline-separated numbered list of dimensions verbatim from brief
-- {{SCREENSHOT_TIER_BLOCK}} — substituted from one of three blocks (see below) based on {{VISUAL_RELEVANCE}}
+- {{BRAND_TYPE}} — consumer-app | b2b | unknown (from brand-references.json)
+- {{BUNDLE_ID}} — iOS App Store bundle ID for consumer-app brands (may be `null`)
+- {{DOCS_URL}} — product documentation URL for b2b brands (may be `null`)
+- {{BRAND_NOTE}} — optional context note from brand-references.json (may be empty string)
+- {{SCREENSHOT_TIER_BLOCK}} — substituted based on {{VISUAL_RELEVANCE}} + {{BRAND_TYPE}} (see blocks below)
 
 ## Prompt body (everything below this line is what the sub-agent receives)
 
 You are researching ONE brand for a competitive teardown.
 
 Brand: {{BRAND}}
+Brand type: {{BRAND_TYPE}}
+{{BRAND_NOTE_LINE_IF_NONEMPTY}}
 Topic: {{TOPIC}}
 Visual relevance: {{VISUAL_RELEVANCE}}
 Session directory: {{SESSION_DIR}}
@@ -29,12 +35,19 @@ Session directory: {{SESSION_DIR}}
 
 {{DIMENSIONS}}
 
-For each dimension, find evidence of how this brand handles it. Use:
-- Brand's own help center / FAQ / product docs
-- App Store / Play Store listing description (for consumer apps)
+For each dimension, find evidence of how this brand handles it.
+
+For **consumer-app** brands, prioritize:
+- Brand's own help center / FAQ
+- App Store / Play Store listing description
 - UX teardown blogs (Built for Mars, Growth.Design, UX Collective, Krazy Coupon Lady, Frugal Flyer, Coupon Cabin, Bustle, Elite Daily)
 - Reddit threads in the brand's subreddit (signal for pain points only, not authoritative on flow)
-- G2 / Capterra (for B2B brands)
+
+For **b2b** brands, prioritize:
+- Brand's product documentation (the starting URL is provided in {{DOCS_URL}} when known)
+- G2 / Capterra UI reviews
+- Vendor's own product-tour or feature pages
+- Independent reviews (UX Collective, B2B SaaS comparisons)
 
 ## Screenshot strategy
 
@@ -63,7 +76,7 @@ For each dimension, find evidence of how this brand handles it. Use:
 ## Screenshots
 <only include this section if visual_relevance allows; otherwise omit entirely>
 
-![<caption>](<url-or-relative-path>)
+![<caption>](<url>)
 *<one-line description>*
 
 ## Sources
@@ -92,7 +105,7 @@ Return JSON status:
     "<dimension-1-slug>": "evidence-found | could-not-verify",
     "<dimension-2-slug>": "evidence-found | could-not-verify"
   },
-  "screenshots": { "tier_used": 1 | 2 | 3 | null, "count": K },
+  "screenshots": { "tier_used": 1 | 2 | null, "count": K },
   "status": "full | partial | failed",
   "suggested_pattern": "<pattern label>",
   "notes": "<one line>"
@@ -100,26 +113,49 @@ Return JSON status:
 
 ---
 
-## Screenshot tier blocks (orchestrator picks one)
+## Screenshot tier blocks (orchestrator picks based on {{VISUAL_RELEVANCE}} + {{BRAND_TYPE}})
 
-### HIGH
+### HIGH + consumer-app
 
-Tier 1: For consumer apps, call WebFetch on
-  https://itunes.apple.com/lookup?bundleId=<inferred-bundle-id>
-  Returns JSON with `screenshotUrls` and `ipadScreenshotUrls`. These are stable CDN URLs.
-  Bundle IDs you may need to infer: Starbucks=com.starbucks.mystarbucks, Chipotle=com.chipotle.ordering, McDonald's=com.mcdonalds.app, etc.
+Tier 1 (preferred): If {{BUNDLE_ID}} is not null, fetch:
+  https://itunes.apple.com/lookup?bundleId={{BUNDLE_ID}}&country=us
+  Parse the JSON `results[0]`. Extract `screenshotUrls` (iPhone, 5+ URLs) and `ipadScreenshotUrls`.
+  Use the first 1-2 iPhone screenshot URLs directly as `![caption](url)` references in your Screenshots section. These are stable Apple CDN URLs.
 
-Tier 2: Search UX-teardown blogs for embedded screenshots. Query like:
-  "site:builtformars.com {{BRAND}}" OR "site:bustle.com {{BRAND}} app" OR "{{BRAND}} app screenshot teardown".
+If {{BUNDLE_ID}} is null, do an iTunes Search API lookup by name first:
+  https://itunes.apple.com/search?term={{BRAND}}&entity=software&country=us&limit=3
+  Pick the result whose `sellerName` or `artistName` matches {{BRAND}}. Use its `screenshotUrls`.
 
-Tier 3: If 1+2 yield nothing, call mcp__claude_ai_keystone__browser_session_create, then browser_navigate to the App Store / Play Store page, then browser_screenshot. Save the result to {{SESSION_DIR}}/screenshots/{{BRAND}}-<n>.png. Always browser_session_close after.
+Tier 2 (fallback if Tier 1 yields no usable URLs): Search UX-teardown blogs for embedded screenshots. Use these targeted queries (one at a time):
+  - site:builtformars.com {{BRAND}}
+  - site:bustle.com {{BRAND}} app
+  - site:frugalflyer.ca {{BRAND}}
+  - site:thekrazycouponlady.com {{BRAND}}
+  - {{BRAND}} app screenshot teardown
 
-Target 1-2 screenshots per brand. Stop after 2.
+When you find a blog post that embeds screenshots, WebFetch the post and look for `<img>` tags whose `src` is a CDN URL (typically `*.cloudfront.net/`, `*.imgix.net/`, `*.cdn.shopify.com/`, etc.). Pick the largest-looking image (highest dimensions in the URL or filename).
 
-### MEDIUM
+Target 1-2 screenshots per brand. Stop after 2 are sourced.
 
-Tier 1 only (App Store API). If nothing found, skip. No browser fallback.
+### HIGH + b2b
 
-### LOW
+Tier 1: WebFetch {{DOCS_URL}} (if not null). Look for `<img>` tags showing product UI — typical pattern is a docs page with annotated UI screenshots. Use those URLs directly.
+
+If {{DOCS_URL}} is null, search:
+  - site:g2.com {{BRAND}} screenshots
+  - site:capterra.com {{BRAND}}
+  - {{BRAND}} product tour
+
+Target 1-2 screenshots. Stop after 2.
+
+### MEDIUM + consumer-app
+
+Tier 1 only (iTunes API). If {{BUNDLE_ID}} is null, do the name search once. Skip if nothing found. No blog-search fallback.
+
+### MEDIUM + b2b
+
+Tier 1 only (WebFetch {{DOCS_URL}}). Skip if nothing found.
+
+### LOW (any brand type)
 
 Skip screenshot pursuit entirely. Findings file omits the "## Screenshots" section.

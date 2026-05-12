@@ -1,0 +1,161 @@
+{
+  "description": "Curated brand list per category for /market-research, with reference URLs for screenshot/research tier 1. For consumer brands, bundle_id is the iOS App Store identifier (used with https://itunes.apple.com/lookup?bundleId=...). For B2B brands, docs_url is the primary product documentation or product-tour starting point (used by the per-brand agent's tier 2 search).",
+  "last_curated": "2026-05-11",
+  "schema_notes": {
+    "bundle_id": "When null, the per-brand agent should do an iTunes Search API lookup by brand name at runtime: https://itunes.apple.com/search?term=<name>&entity=software&country=us&limit=1",
+    "docs_url": "When null for a b2b brand, the agent should search for '<brand> product documentation' as its tier 2 starting point",
+    "note": "Free-form note for the agent's context, surfaced in the per-brand prompt"
+  },
+  "categories": {
+    "Loyalty/CRM": {
+      "consumer_brands": [
+        {"name": "Chipotle", "bundle_id": "com.chipotle.ordering"},
+        {"name": "Starbucks", "bundle_id": "com.starbucks.mystarbucks"},
+        {"name": "Panera", "bundle_id": "com.panerabread.com"},
+        {"name": "McDonald's", "bundle_id": "com.mcdonalds.app"},
+        {"name": "Dunkin'", "bundle_id": "com.dunkinbrands.otgo"},
+        {"name": "Subway", "bundle_id": "com.subway.SubwayApp"},
+        {"name": "Taco Bell", "bundle_id": "com.tacobell.ordering"},
+        {"name": "Burger King", "bundle_id": "com.burgerking.bkapp"},
+        {"name": "Domino's", "bundle_id": "com.dominos.ordering"},
+        {"name": "Tropical Smoothie", "bundle_id": "com.tropicalsmoothiecafe.app"},
+        {"name": "Wendy's", "bundle_id": "com.wendys.app"},
+        {"name": "Chick-fil-A", "bundle_id": "com.chick-fil-a.cfaapp"},
+        {"name": "Sephora", "bundle_id": "com.sephora.mobileapp"},
+        {"name": "Ulta", "bundle_id": "com.ulta.ios"},
+        {"name": "Kohl's", "bundle_id": "com.kohls.mcommerce.opal"},
+        {"name": "Target", "bundle_id": "com.imageshack.target", "note": "Target Circle program lives within the main Target app"},
+        {"name": "Dutch Bros", "bundle_id": null},
+        {"name": "Sweetgreen", "bundle_id": "com.sweetgreen.consumer"},
+        {"name": "Cava", "bundle_id": "com.cavamezzegrill.cava"}
+      ],
+      "b2b_brands": []
+    },
+    "Ordering": {
+      "consumer_brands": [
+        {"name": "Chipotle", "bundle_id": "com.chipotle.ordering"},
+        {"name": "Starbucks", "bundle_id": "com.starbucks.mystarbucks"},
+        {"name": "Panera", "bundle_id": "com.panerabread.com"},
+        {"name": "Domino's", "bundle_id": "com.dominos.ordering"},
+        {"name": "McDonald's", "bundle_id": "com.mcdonalds.app"},
+        {"name": "Dunkin'", "bundle_id": "com.dunkinbrands.otgo"},
+        {"name": "Taco Bell", "bundle_id": "com.tacobell.ordering"},
+        {"name": "DoorDash", "bundle_id": "com.doordash.DoorDashConsumer"},
+        {"name": "Uber Eats", "bundle_id": "com.ubercab.eats"},
+        {"name": "Grubhub", "bundle_id": "com.grubhub.iphone"},
+        {"name": "Postmates", "bundle_id": "com.postmates.delivery"},
+        {"name": "Cava", "bundle_id": "com.cavamezzegrill.cava"},
+        {"name": "Sweetgreen", "bundle_id": "com.sweetgreen.consumer"},
+        {"name": "Shake Shack", "bundle_id": "com.shakeshack.ios"},
+        {"name": "In-N-Out", "bundle_id": null}
+      ],
+      "b2b_brands": [
+        {"name": "Olo", "docs_url": "https://www.olo.com/products/ordering", "note": "Underlying platform powering many QSR digital ordering surfaces, including Thanx-connected ones"}
+      ]
+    },
+    "Marketing Automation": {
+      "consumer_brands": [],
+      "b2b_brands": [
+        {"name": "Mailchimp", "docs_url": "https://mailchimp.com/help/"},
+        {"name": "Klaviyo", "docs_url": "https://help.klaviyo.com/"},
+        {"name": "Braze", "docs_url": "https://www.braze.com/docs"},
+        {"name": "Salesforce Marketing Cloud", "docs_url": "https://help.salesforce.com/s/articleView?id=sf.mc_overview.htm"},
+        {"name": "HubSpot", "docs_url": "https://knowledge.hubspot.com/marketing"},
+        {"name": "Iterable", "docs_url": "https://support.iterable.com/hc/en-us"},
+        {"name": "Customer.io", "docs_url": "https://customer.io/docs/"},
+        {"name": "ActiveCampaign", "docs_url": "https://help.activecampaign.com/hc/en-us"},
+        {"name": "Marketo", "docs_url": "https://experienceleague.adobe.com/en/docs/marketo/using/home"},
+        {"name": "Eloqua", "docs_url": "https://docs.oracle.com/en/cloud/saas/marketing/eloqua-user/"}
+      ]
+    },
+    "Data": {
+      "consumer_brands": [],
+      "b2b_brands": [
+        {"name": "Looker", "docs_url": "https://cloud.google.com/looker/docs"},
+        {"name": "Tableau", "docs_url": "https://help.tableau.com/current/pro/desktop/en-us/help.htm"},
+        {"name": "Power BI", "docs_url": "https://learn.microsoft.com/en-us/power-bi/"},
+        {"name": "Mode", "docs_url": "https://mode.com/help/"},
+        {"name": "Hex", "docs_url": "https://learn.hex.tech/"},
+        {"name": "Sigma", "docs_url": "https://help.sigmacomputing.com/"},
+        {"name": "ThoughtSpot", "docs_url": "https://docs.thoughtspot.com/"},
+        {"name": "Metabase", "docs_url": "https://www.metabase.com/docs/"}
+      ]
+    },
+    "CDP": {
+      "consumer_brands": [],
+      "b2b_brands": [
+        {"name": "Segment", "docs_url": "https://segment.com/docs/"},
+        {"name": "mParticle", "docs_url": "https://docs.mparticle.com/"},
+        {"name": "Tealium", "docs_url": "https://docs.tealium.com/"},
+        {"name": "Twilio Engage", "docs_url": "https://www.twilio.com/docs/engage"},
+        {"name": "Treasure Data", "docs_url": "https://docs.treasuredata.com/"},
+        {"name": "RudderStack", "docs_url": "https://www.rudderstack.com/docs/"},
+        {"name": "Hightouch", "docs_url": "https://hightouch.com/docs", "note": "Reverse-ETL — borderline CDP; include for sync-mechanics questions"},
+        {"name": "Bikky", "docs_url": "https://www.bikky.com/", "note": "Restaurant-focused CDP / customer engagement platform"}
+      ]
+    },
+    "Operations - Feedback": {
+      "consumer_brands": [],
+      "b2b_brands": [
+        {"name": "Ovation", "docs_url": "https://www.ovationup.com/", "note": "Thanx PARTNER (not a competitor) — still useful as a UX reference for how feedback inboxes / response flows look to operators"},
+        {"name": "Medallia", "docs_url": "https://www.medallia.com/platform/"},
+        {"name": "Yelp for Business", "docs_url": "https://biz.yelp.com/support/"},
+        {"name": "Momos", "docs_url": "https://momos.com/"}
+      ]
+    },
+    "Operations - Reservations": {
+      "consumer_brands": [
+        {"name": "OpenTable", "bundle_id": "com.opentable.OpenTableiPhone"},
+        {"name": "Resy", "bundle_id": "com.resy.mobile"},
+        {"name": "Tock", "bundle_id": "com.tablerock.tock"},
+        {"name": "Yelp Waitlist", "bundle_id": "com.yelp.iphone"}
+      ],
+      "b2b_brands": []
+    },
+    "Operations - Gift Cards": {
+      "consumer_brands": [],
+      "b2b_brands": [
+        {"name": "Toast Gift Cards", "docs_url": "https://central.toasttab.com/s/article/Gift-Card-Management"},
+        {"name": "Square Gift Cards", "docs_url": "https://squareup.com/help/us/en/article/5202-square-gift-cards"},
+        {"name": "ValueTec", "docs_url": "https://www.valutecnow.com/"},
+        {"name": "SVS", "docs_url": "https://www.givex.com/", "note": "Stored Value Solutions, gift-card/stored-value processor"}
+      ]
+    },
+    "Operations - Wi-Fi": {
+      "consumer_brands": [],
+      "b2b_brands": [
+        {"name": "Cisco Meraki", "docs_url": "https://documentation.meraki.com/MR"},
+        {"name": "Bloom Intelligence", "docs_url": "https://bloomintelligence.com/"}
+      ]
+    },
+    "User Experience": {
+      "consumer_brands": [
+        {"name": "Starbucks", "bundle_id": "com.starbucks.mystarbucks", "note": "Chris (Bubbakoo's) named UX favorite"},
+        {"name": "Cava", "bundle_id": "com.cavamezzegrill.cava", "note": "Chris-named UX favorite"},
+        {"name": "Sephora", "bundle_id": "com.sephora.mobileapp", "note": "Chris-named UX favorite"},
+        {"name": "Chipotle", "bundle_id": "com.chipotle.ordering"},
+        {"name": "Sweetgreen", "bundle_id": "com.sweetgreen.consumer"},
+        {"name": "Tropical Smoothie", "bundle_id": "com.tropicalsmoothiecafe.app"},
+        {"name": "Robinhood", "bundle_id": "com.robinhood.release.Robinhood"},
+        {"name": "Cash App", "bundle_id": "com.squareup.cash"},
+        {"name": "Duolingo", "bundle_id": "com.duolingo.DuolingoMobile"}
+      ],
+      "b2b_brands": []
+    },
+    "Payments": {
+      "consumer_brands": [
+        {"name": "Apple Pay", "bundle_id": null, "note": "Not a discrete app — system-level; reference Apple's Wallet app screenshots or Apple Pay help docs"},
+        {"name": "Google Pay", "bundle_id": "com.google.commerce.tapandpay"},
+        {"name": "PayPal", "bundle_id": "com.yourcompany.PPClient"},
+        {"name": "Venmo", "bundle_id": "com.venmo.TouchFree"},
+        {"name": "Cash App", "bundle_id": "com.squareup.cash"}
+      ],
+      "b2b_brands": [
+        {"name": "Stripe", "docs_url": "https://stripe.com/docs"},
+        {"name": "Square", "docs_url": "https://developer.squareup.com/docs"},
+        {"name": "Toast", "docs_url": "https://central.toasttab.com/"},
+        {"name": "Adyen", "docs_url": "https://docs.adyen.com/"}
+      ]
+    }
+  }
+}

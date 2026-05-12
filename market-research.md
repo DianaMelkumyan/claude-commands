@@ -33,6 +33,8 @@ MODULES_SOURCE_URL                = "https://www.notion.so/8662d31182004bc5a3f2b
 
 When `--output-dir <path>` is set, the skill writes a structured `result.json` to that directory at the end of the run (in addition to all existing artifacts). The result.json is the machine-readable contract consumed by orchestrators like `/accio`. When unset, only the existing session-dir artifacts are produced.
 
+`--output-dir` is purely additive. It does NOT change any other behavior — in particular, **Notion publish (Phase 3b), run-log entries (Phase 3d), local markdown (3a), and PRD-Resources linking (3c, when input is a Notion URL) all run identically regardless of whether `--output-dir` is set.** There is no "machine mode" that skips publishing. Publishing IS the canonical artifact.
+
 ## Workflow overview
 
 3 phases, no manual checkpoint — the brief summary prints before research kicks off; user can Ctrl+C if it looks wrong:
@@ -346,6 +348,10 @@ When the sub-agent returns, verify `<session-dir>/market-landscape.md` exists an
 
 ## 3b. Create the Notion page in the Market research database
 
+**This step ALWAYS runs.** Publishing to the Market research database is the canonical artifact of /market-research — it is not gated by `--output-dir`, "machine mode", orchestrator invocation, or any other flag. The Notion page is the durable, shareable output; the result.json (3e) and local markdown (3a) are additive complements, not replacements. Skipping this step breaks /prd Phase 1 (notion-search) and /accio chain consumers that resolve the page by URL.
+
+Do NOT introduce a `notion_publish_skipped_machine_mode` signal or any equivalent skip gate. If publish fails, surface the failure per the error-handling rules below — do not pre-emptively skip.
+
 Read `<session-dir>/market-landscape.md`.
 
 Transform pipe tables to Notion `<table>` XML (Notion's enhanced-markdown spec requires this for rendering).
@@ -484,7 +490,7 @@ If synthesis returned partial output (could not fully cluster), `signals.append(
   ],
   "decisions": <the accumulated decisions list>,
   "confidence": <computed confidence>,
-  "notion_page_url": "<the published page url, or null if publish failed>",
+  "notion_page_url": "<the published page url from Phase 3b — always set on successful publish; null ONLY if the Notion create-pages call failed after retry. Never null due to mode/--output-dir; 3b is unconditional>",
   "branch": "<A | B | C>"
 }
 ```
